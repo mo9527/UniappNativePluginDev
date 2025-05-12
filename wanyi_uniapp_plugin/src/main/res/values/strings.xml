@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WanyiUniappPlugins</string>
+    <string name="preference_file_key">com.wanyi.plugins.file_key</string>
+    <string name="env">dev</string>
+</resources>
