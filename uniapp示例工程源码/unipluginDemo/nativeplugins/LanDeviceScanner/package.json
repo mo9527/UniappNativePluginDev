@@ -1,0 +1,22 @@
+{
+  "name": "LanDeviceScanner",
+  "id": "LanDeviceScanner",
+  "version": "1.0.0",
+  "description": "扫描局域网内的设备列表",
+  "_dp_type": "nativeplugin",
+  "_dp_nativeplugin": {
+    "android": {
+      "plugins": [
+        {
+          "type": "module",
+          "name": "LanDeviceScanner",
+          "class": "com.vin.wifi.device.LanDeviceScanner"
+        }
+      ],
+      "integrateType": "aar",
+      "parameters": {
+      },
+      "dependencies": []
+    }
+  }
+}

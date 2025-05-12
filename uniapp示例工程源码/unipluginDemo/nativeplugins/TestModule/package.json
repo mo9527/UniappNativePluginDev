@@ -1,0 +1,22 @@
+{
+  "name": "TestModule",
+  "id": "TestModule",
+  "version": "0.0.1",
+  "description": "我是新来的",
+  "_dp_type": "nativeplugin",
+  "_dp_nativeplugin": {
+    "android": {
+      "plugins": [
+        {
+          "type": "module",
+          "name": "TestModule_TestModule",
+          "class": "io.dcloud.uniplugin.TestModule"
+        }
+      ],
+      "integrateType": "aar",
+      "parameters": {
+      },
+      "dependencies": []
+    }
+  }
+}
