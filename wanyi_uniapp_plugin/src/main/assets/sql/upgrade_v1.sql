@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS pickup_code;
 CREATE TABLE IF NOT EXISTS
 pickup_code (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_code  TEXT NOT NULL, --项目代码
     code TEXT NOT NULL, --取货码
     status INTEGER DEFAULT 0,    --状态
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -12,7 +13,7 @@ pickup_code (
 
 DROP INDEX pickup_code_uindex;
 CREATE UNIQUE INDEX pickup_code_uindex
-on pickup_code (code);
+on pickup_code (project_code, code);
 
 DROP TABLE IF EXISTS device_operation_log;
 CREATE TABLE IF NOT EXISTS
@@ -25,8 +26,8 @@ device_operation_log (
     update_time TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-insert into pickup_code (code, status) values ('123321', 0);
-insert into pickup_code (code, status) values ('123322', 0);
-insert into pickup_code (code, status) values ('123323', 0);
-insert into pickup_code (code, status) values ('123324', 0);
-insert into pickup_code (code, status) values ('123325', 0);
+insert into pickup_code (project_code, code, status) values ('ABC', '123321', 0);
+insert into pickup_code (project_code, code, status) values ('ABC', '123322', 0);
+insert into pickup_code (project_code, code, status) values ('ABC', '123323', 0);
+insert into pickup_code (project_code, code, status) values ('ABC', '123324', 0);
+insert into pickup_code (project_code, code, status) values ('ABC', '123325', 0);

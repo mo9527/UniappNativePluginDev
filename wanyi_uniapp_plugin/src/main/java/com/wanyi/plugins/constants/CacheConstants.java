@@ -8,6 +8,9 @@ public class CacheConstants {
     //货物库存剩余
     public static final String CARGO_STOCK_LEFT = "CARGO_STOCK_LEFT";
 
+    //已取货物数量
+    public static final String TAKE_OUT_CARGO_TOTAL = "TAKE_OUT_CARGO_TOTAL";
+
     //丝杆当前楼层
     public static final String SCREW_ROD_CURRENT_FLOOR = "SCREW_ROD_CURRENT_FLOOR";
 
@@ -39,4 +42,6 @@ public class CacheConstants {
 
     //F8层货物剩余
     public static final String F8_STOCK_LEFT = "F8_STOCK_LEFT";
+
+
 }

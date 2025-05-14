@@ -1,6 +1,7 @@
 package com.wanyi.plugins.dao;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -29,4 +30,13 @@ public interface PickupCodeDao {
 
     @Update
     int updateRecord(PickupCode record);
+
+    @Query("DELETE FROM pickup_code")
+    int deleteAll();
+
+    @Query("SELECT COUNT(*) FROM pickup_code WHERE status = 0")
+    int countOfUnUsed();
+
+    @Query("SELECT COUNT(*) FROM pickup_code WHERE status = 1")
+    int countOfUsed();
 }

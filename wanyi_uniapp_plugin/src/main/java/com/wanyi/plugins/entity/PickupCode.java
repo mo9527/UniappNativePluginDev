@@ -5,11 +5,16 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import com.wanyi.plugins.utils.DateUtils;
+
 @Entity(tableName = "pickup_code", indices = {@Index(value = {"code"}, unique = true)})
 public class PickupCode {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @ColumnInfo(name = "project_code")
+    private String project_code;
 
     private String code;
 
@@ -22,9 +27,15 @@ public class PickupCode {
     @ColumnInfo(name = "update_time")
     private String updateTime;
 
-    public PickupCode(String code) {
+    public PickupCode(String projectCode, String code) {
+        this.project_code = projectCode;
         this.code = code;
         this.status = 0;
+        this.createTime = DateUtils.getDateTime();
+        this.updateTime = DateUtils.getDateTime();
+    }
+
+    public PickupCode() {
     }
 
 
@@ -34,6 +45,14 @@ public class PickupCode {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getProject_code() {
+        return project_code;
+    }
+
+    public void setProject_code(String project_code) {
+        this.project_code = project_code;
     }
 
     public String getCode() {

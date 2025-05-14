@@ -3,7 +3,6 @@ package com.wanyi.plugins.database;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
@@ -48,7 +47,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             .addMigrations(getMigrations(context))
                             .addCallback(new Callback() {
                                 @Override
-                                public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                                public void onCreate( SupportSQLiteDatabase db) {
                                     Log.i(TAG, "Database执行onCreate方法");
                                     executeInitSql(context, db);
                                 }

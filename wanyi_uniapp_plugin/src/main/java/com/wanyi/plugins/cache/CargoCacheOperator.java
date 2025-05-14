@@ -33,9 +33,9 @@ public class CargoCacheOperator {
         localCache.set(CacheConstants.F5_STOCK_LEFT, String.valueOf(eachFloorStock));
         localCache.set(CacheConstants.F6_STOCK_LEFT, String.valueOf(eachFloorStock));
         localCache.set(CacheConstants.F7_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.CARGO_STOCK_TOTAL, String.valueOf(total));
-        localCache.set(CacheConstants.CARGO_STOCK_LEFT, String.valueOf(total));
-        localCache.set(CacheConstants.X_EACH_FLOOR_STOCK, String.valueOf(eachFloorStock));
+        localCache.setInt(CacheConstants.CARGO_STOCK_TOTAL, total);
+        localCache.setInt(CacheConstants.CARGO_STOCK_LEFT, total);
+        localCache.setInt(CacheConstants.X_EACH_FLOOR_STOCK, eachFloorStock);
     }
 
     //货物减少
@@ -51,7 +51,7 @@ public class CargoCacheOperator {
         }
         try {
             // 减少总库存
-            int totalLeft = getSafeInteger(localCache.get(CacheConstants.CARGO_STOCK_LEFT), 0);
+            int totalLeft = getSafeInteger(localCache.getInt(CacheConstants.CARGO_STOCK_LEFT), 0);
             if (totalLeft <= 0) {
                 throw new RuntimeException("总库存已空");
             }
@@ -62,7 +62,7 @@ public class CargoCacheOperator {
             String nextFloorKey = getFloorKey(floor - 1);
 
             // 获取当前楼层库存
-            int currentFloorStock = getSafeInteger(localCache.get(currentFloorKey), 0);
+            int currentFloorStock = getSafeInteger(localCache.getInt(currentFloorKey), 0);
 
             if (currentFloorStock > 0) {
                 // 当前楼层有库存，减少当前楼层库存
@@ -70,7 +70,7 @@ public class CargoCacheOperator {
                 return false;
             } else if (!nextFloorKey.isEmpty()) {
                 // 当前楼层无库存，减少下一层楼库存
-                int nextFloorStock = getSafeInteger(localCache.get(nextFloorKey), 0);
+                int nextFloorStock = getSafeInteger(localCache.getInt(nextFloorKey), 0);
                 if (nextFloorStock > 0) {
                     localCache.set(nextFloorKey, String.valueOf(nextFloorStock - 1));
                     return true;
@@ -101,13 +101,13 @@ public class CargoCacheOperator {
     }
 
     // 安全地将字符串转换为整数，若为空或无效则返回默认值
-    private int getSafeInteger(String value, int defaultValue) {
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
+    private int getSafeInteger(int value, int defaultValue) {
         try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
+            if (value == 0 || value < 0 ) {
+                return defaultValue;
+            }
+            return value;
+        }catch (Exception e){
             return defaultValue;
         }
     }

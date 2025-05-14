@@ -20,4 +20,7 @@ public interface DeviceOperationLogDao {
 
     @Query("SELECT * FROM device_operation_log order by id desc limit 100")
     List<DeviceOperationLog> selectAllLimit100();
+
+    @Query("SELECT * FROM device_operation_log where type in (:typeList) order by id desc LIMIT :limit OFFSET :offset")
+    List<DeviceOperationLog> selectListPage(List<String> typeList, int limit, int offset);
 }

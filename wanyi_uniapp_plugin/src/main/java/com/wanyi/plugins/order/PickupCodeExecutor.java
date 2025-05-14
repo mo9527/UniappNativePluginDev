@@ -1,6 +1,7 @@
 package com.wanyi.plugins.order;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.wanyi.plugins.dao.PickupCodeDao;
 import com.wanyi.plugins.database.AppDatabase;
@@ -24,7 +25,7 @@ public class PickupCodeExecutor {
     public static final String TAG = "PickupCodeExecutor";
 
     private static PickupCodeDao pickupCodeDao;
-    public static boolean importPickupCode(Context context, String filePath) {
+    public static boolean importPickupCode(Context context, String filePath, int insertType) {
         AppDatabase appDatabase = AppDatabase.getDatabase(context);
         pickupCodeDao = appDatabase.pickupCodeDao();
 
@@ -34,20 +35,44 @@ public class PickupCodeExecutor {
             throw new BusinessException("取货码不能为空");
         }
 
-        PickupCode[] insertList = {};
-        dataMap.forEach((key, value) -> {
-            String code = String.valueOf(value);
-            if (StringUtils.isNotEmpty(code)){
-                PickupCode existed = pickupCodeDao.selectByCode(code);
-                if (existed != null && existed.getStatus() == 0){
+        executeInsertPickupCode(context, dataMaps, insertType);
+        return true;
+    }
+
+    /**
+     *
+     * @param context
+     * @param dataMaps
+     * @param insertType 1 覆盖更新 2增量导入 3清空
+     */
+    public static void executeInsertPickupCode(Context context, List<Map<String, Object>> dataMaps, int insertType) {
+        AppDatabase appDatabase = AppDatabase.getDatabase(context);
+        pickupCodeDao = appDatabase.pickupCodeDao();
+
+        if (insertType == 3){
+            Log.i(TAG, "清空取货码");
+            pickupCodeDao.deleteAll();
+            return;
+        }
+
+
+        PickupCode[] insertList = new PickupCode[dataMaps.size()];
+        for (int i = 0; i < dataMaps.size(); i++) {
+            Map<String, Object> dataMap = dataMaps.get(i);
+            String code = MapUtils.getString(dataMap, "A");
+            String projectCode = MapUtils.getString(dataMap, "B");
+            PickupCode existed = pickupCodeDao.selectByCode(code);
+            if (existed != null && existed.getStatus() == 0){
+                if (insertType == 1){
+                    existed.setStatus(0);
+                    pickupCodeDao.updateRecord(existed);
+                }else {
                     throw new BusinessException("取货码已存在");
                 }
-                ArrayUtils.add(insertList, new PickupCode(code));
             }
-        });
-
+            insertList[i] = new PickupCode(projectCode, code);
+        }
         pickupCodeDao.insertAll(insertList);
-        return true;
     }
 
 }

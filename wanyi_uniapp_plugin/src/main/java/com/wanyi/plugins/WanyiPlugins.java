@@ -5,15 +5,19 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.lztek.toolkit.Lztek;
 import com.lztek.toolkit.SerialPort;
 import com.wanyi.plugins.cache.CargoCacheOperator;
 import com.wanyi.plugins.cache.LocalCache;
+import com.wanyi.plugins.commandFunc.PickupExcelReceiverFunc;
 import com.wanyi.plugins.constants.CacheConstants;
 import com.wanyi.plugins.constants.GateConstants;
+import com.wanyi.plugins.entity.DeviceOperationLog;
 import com.wanyi.plugins.enums.GateOrderEnum;
 import com.wanyi.plugins.enums.SerialPortEnum;
+import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
 import com.wanyi.plugins.order.CargoMachineCommandExecutor;
 import com.wanyi.plugins.order.CargoMoveCommandExecutor;
@@ -24,14 +28,20 @@ import com.wanyi.plugins.qrcode.QrCodeScannerService;
 import com.wanyi.plugins.serialport.SerialPortCom0DataCallback;
 import com.wanyi.plugins.serialport.SerialPortCom2DataCallback;
 import com.wanyi.plugins.serialport.SerialPortManager;
+import com.wanyi.plugins.service.CargoStockMonitorService;
+import com.wanyi.plugins.service.OperationLogService;
 import com.wanyi.plugins.socket.WebsocketServer;
 import com.wanyi.plugins.order.GateCommandExecutor;
+import com.wanyi.plugins.utils.ExcelHelper;
 import com.wanyi.plugins.utils.HexUtil;
 import com.wanyi.plugins.utils.LanIpUtil;
 import com.wanyi.plugins.utils.SerialPortUtils;
 import com.wanyi.plugins.utils.text.StringUtils;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
@@ -48,16 +58,17 @@ public class WanyiPlugins extends UniModule {
     private SerialPortManager serialPortManager;
 
     /**
-     * 接收远控命令
+     * 初始化一些东西
      * @param options
      * @param callback
      */
     @UniJSMethod(uiThread = false)
-    public void startRemoteServer(JSONObject options, final UniJSCallback callback){
+    public void init(JSONObject options, final UniJSCallback callback){
         Context context = mUniSDKInstance.getContext();
         WebsocketServer.startServer(context);
         QrCodeScannerService.start(context);
-//        DatabaseInitialization.init(context);
+        CargoStockMonitorService.getInstance().init(context);
+
 
         LocalCache localCache = LocalCache.getInstance(context);
         localCache.set(CacheConstants.X_EACH_FLOOR_STOCK, "5");
@@ -69,12 +80,14 @@ public class WanyiPlugins extends UniModule {
 
         SerialPortManager.getInstance().init(context);
         CargoMachineCommandExecutor.getInstance().resetPosition(context);
+
+        ExcelHelper.initProperties();
     }
 
 
     @Override
     public void onActivityDestroy() {
-        Log.i(TAG, "开始 onActivityDestroy..........");
+        Log.i(TAG, "销毁 onActivityDestroy..........");
         WebsocketServer.stopServer();
         QrCodeScannerService.close(mUniSDKInstance.getContext());
 
@@ -202,7 +215,7 @@ public class WanyiPlugins extends UniModule {
     }
 
     /**
-     * 导入取货码
+     * 导入取货码,上位机直接导入使用
      * @param options
      */
     @UniJSMethod
@@ -213,14 +226,58 @@ public class WanyiPlugins extends UniModule {
             return;
         }
 
+        int type = options.getIntValue("type");
+
         try {
-            boolean success = PickupCodeExecutor.importPickupCode(mUniSDKInstance.getContext(), filePath);
+            boolean success = PickupCodeExecutor.importPickupCode(mUniSDKInstance.getContext(), filePath, type);
             if (success){
                 callback.invoke(Response.success());
             }
         }catch (Exception e){
             callback.invoke(Response.fail(e.getMessage()));
         }
+    }
+
+    /**
+     * app端读取excel使用，得到的数据用socket发送到上位机
+     * @param options
+     * @param callback
+     */
+    @UniJSMethod(uiThread = false)
+    public void readExcel(JSONObject options, final UniJSCallback callback){
+        String filePath = options.getString("path");
+        if (StringUtils.isEmpty(filePath)){
+            callback.invoke(Response.fail("文件路径为空"));
+            return;
+        }
+
+        try {
+            List<Map<String, Object>> dataList = ExcelHelper.readExcel(filePath, mUniSDKInstance.getContext());
+            Log.i(TAG, "读取到Excel数据：" + JSONObject.toJSONString(dataList));
+            callback.invoke(Response.success(dataList));
+        }catch (Exception e){
+            callback.invoke(Response.fail(e.getMessage()));
+        }
+
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void getOperationLog(JSONObject options, final UniJSCallback callback){
+        JSONArray typeList = options.getJSONArray("type");
+        if (CollectionUtils.isEmpty(typeList)){
+            callback.invoke(Response.fail("筛选类型为空"));
+            return;
+        }
+
+        int pageNum = options.getIntValue("pageNum");
+        OperationLogService logService = OperationLogService.getInstance();
+        List<String> types = typeList.toJavaList(String.class);
+        List<DeviceOperationLog> logListPage = logService.getLogListPage(types, mUniSDKInstance.getContext(), pageNum);
+        if (CollectionUtils.isNotEmpty(logListPage)){
+            callback.invoke(Response.success(logListPage));
+            return;
+        }
+        callback.invoke(Response.fail());
     }
 
 }

@@ -1,10 +1,7 @@
 package com.wanyi.plugins.utils;
 
-import static org.apache.poi.ss.usermodel.CellType.BLANK;
-import static org.apache.poi.ss.usermodel.CellType.BOOLEAN;
+
 import static org.apache.poi.ss.usermodel.CellType.FORMULA;
-import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
-import static org.apache.poi.ss.usermodel.CellType.STRING;
 
 import android.content.Context;
 import android.net.Uri;
@@ -14,21 +11,7 @@ import com.wanyi.plugins.exception.BusinessException;
 import com.wanyi.plugins.utils.text.StringUtils;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.poi.ss.formula.functions.T;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CellValue;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,9 +22,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.apache.poi.ss.usermodel.*;
 
 public class ExcelHelper {
 
@@ -49,100 +36,73 @@ public class ExcelHelper {
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public static List<Map<String, Object>> readExcel(String filePath, Context context){
-        try {
-            String realPath = convertPath(context, filePath);
-
-            File file = new File(realPath);
-
-            if (file.exists()) {
-                FileInputStream fis = new FileInputStream(file);
-                return readExcel(fis);
-            } else {
-                Log.e(TAG, "文件不存在: " + realPath);
-            }
-        }catch (FileNotFoundException e){
-            Log.e(TAG, "读取Excel文件出错, filePath: " + filePath, e);
-            throw new BusinessException("无法读取文件内容");
-        }
-
-        return Lists.newArrayList();
+    static {
     }
 
-    public static List<Map<String, Object>> readExcel(InputStream in){
-        Workbook workbook = null;
-        List<Map<String, Object>> rowList = new ArrayList<>();
-        try {
-            workbook = new XSSFWorkbook(in);
+    public static List<Map<String, Object>> readExcel(String filePath, Context context){
+        String realPath = convertPath(context, filePath);
 
+        File file = new File(realPath);
+
+        if (file.exists()) {
+            return readExcel(file);
+        } else {
+            Log.e(TAG, "文件不存在: " + realPath);
+        }
+
+        return new ArrayList<>();
+    }
+
+    public static List<Map<String, Object>> readExcel(File file){
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        try {
+            Log.i(TAG, "开始读取Excel文件");
+            Workbook workbook = WorkbookFactory.create(file);
             Sheet sheet = workbook.getSheetAt(0);
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue;
-                Map<String, Object> rowMap = new TreeMap<>();
+                if (row.getRowNum() == 0){
+                    Log.i(TAG, "读取Excel第一行标题，不处理");
+                    continue;
+                }
+                Map<String, Object> rowMap = new LinkedHashMap<>();
                 for (Cell cell : row) {
-                    Object cellValue = null;
-                    CellType cellType = cell.getCellType();
-                    String columnLetter = CellReference.convertNumToColString(cell.getColumnIndex());
-                    if (cellType == STRING || cellType == BLANK){
-                        cellValue = cell.getStringCellValue();
-                    }else if (cellType == NUMERIC){
-                        if (DateUtil.isCellDateFormatted(cell)){
-                            cellValue = dateFormat.format(cell.getDateCellValue());
-                        }else {
-                            cellValue = ((XSSFCell) cell).getRawValue();
-                        }
-
-                    }else if (cellType == BOOLEAN){
-                        cellValue = cell.getBooleanCellValue();
-                    }else if (cellType == FORMULA){
-                        cellValue = getFormulaValue(cell, workbook);
-                    }else {
-                        Log.e(TAG, StringUtils.format("Unknown CellType: {}, row: {}, column: {}", cellType, row.getRowNum(), columnLetter));
-                        cellValue = cell.getStringCellValue();
-                    }
-
-                    if (!ObjectUtils.isEmpty(cellValue)){
-                        if (cellValue instanceof String){
-                            cellValue = ((String) cellValue).trim().replaceAll("[\\t\\n]", "");
-                        }
-                        rowMap.put(columnLetter, cellValue);
-                    }
+                    String colLetter = getColumnLetter(cell.getColumnIndex());
+                    rowMap.put(colLetter, getCellValue(cell));
                 }
-                if (MapUtils.isNotEmpty(rowMap)){
-                    rowList.add(rowMap);
-                }
+                resultList.add(rowMap);
             }
 
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            IOUtils.closeQuietly(workbook);
+        } catch (Exception e) {
+            Log.e(TAG, "读取Excel文件出错", e);
+            throw new BusinessException("读取Excel文件出错");
         }
-        return rowList;
+
+        return resultList;
     }
 
-    private static Object getFormulaValue(Cell cell, Workbook workbook){
-        Object r = null;
-        if (cell.getCellType() == FORMULA) {
-            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-            CellValue cellValue = evaluator.evaluate(cell);
-            switch (cellValue.getCellType()) {
-                case STRING:
-                    r = cellValue.getStringValue();
-                    break;
-                case NUMERIC:
-                    r = cellValue.getNumberValue();
-                    break;
-                case BOOLEAN:
-                    r = cellValue.getBooleanValue();
-                    break;
-                default:
-                    Log.e(TAG, "Formula value is unknown");
-                    break;
-            }
+    private static String getColumnLetter(int column) {
+        StringBuilder sb = new StringBuilder();
+        while (column >= 0) {
+            sb.insert(0, (char) ('A' + column % 26));
+            column = column / 26 - 1;
         }
-        return r;
+        return sb.toString();
+    }
+
+    private static Object getCellValue(Cell cell) {
+        switch (cell.getCellType()) {
+            case STRING: return cell.getStringCellValue();
+            case BOOLEAN: return cell.getBooleanCellValue();
+            case NUMERIC:
+                return DateUtil.isCellDateFormatted(cell)
+                        ? cell.getDateCellValue()
+                        : cell.getNumericCellValue();
+            case FORMULA: return cell.getCellFormula();
+            case BLANK: return "";
+            default: return "";
+        }
     }
 
     private static String convertPath(Context context, String path) {
@@ -154,5 +114,12 @@ public class ExcelHelper {
         } else {
             return path;
         }
+    }
+
+    public static void initProperties(){
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLInputFactory", "com.fasterxml.aalto.stax.InputFactoryImpl");
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLOutputFactory", "com.fasterxml.aalto.stax.OutputFactoryImpl");
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLEventFactory", "com.fasterxml.aalto.stax.EventFactoryImpl");
+        System.setProperty("org.apache.poi.ss.ignoreMissingFontSystem", "true");
     }
 }

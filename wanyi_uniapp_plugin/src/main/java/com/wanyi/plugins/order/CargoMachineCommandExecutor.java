@@ -1,6 +1,7 @@
 package com.wanyi.plugins.order;
 
 import static com.wanyi.plugins.R.string.env;
+import static com.wanyi.plugins.enums.OperationLogType.CARGO_TAKE;
 
 import android.content.Context;
 import android.util.Log;
@@ -12,6 +13,8 @@ import com.wanyi.plugins.cache.LocalCache;
 import com.wanyi.plugins.constants.CacheConstants;
 import com.wanyi.plugins.dao.PickupCodeDao;
 import com.wanyi.plugins.database.AppDatabase;
+import com.wanyi.plugins.enums.OperationLogType;
+import com.wanyi.plugins.service.OperationLogService;
 import com.wanyi.plugins.states.CargoPusherState;
 import com.wanyi.plugins.entity.PickupCode;
 
@@ -133,6 +136,7 @@ public class CargoMachineCommandExecutor {
             }
             PickupCode newEntity = pickupCodeDao.selectByCode(finalCode);
             Log.i(TAG, "取货码状态：" + JSON.toJSONString(newEntity));
+            OperationLogService.getInstance().addLog(context, CARGO_TAKE, CARGO_TAKE.getDesc());
         }catch (Exception e){
             Log.e(TAG, "执行取货操作失败", e);
         }

@@ -7,6 +7,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSONObject;
 import com.wanyi.plugins.commandFunc.GateCommandFunc;
 import com.wanyi.plugins.commandFunc.ImageSaverFunc;
+import com.wanyi.plugins.commandFunc.PickupExcelReceiverFunc;
 import com.wanyi.plugins.enums.SocketCommandEnum;
 import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
@@ -39,6 +40,7 @@ public class WebsocketServer {
         commandMap = new HashMap<>();
         commandMap.put(SocketCommandEnum.OPEN_GATE.getCommand(), new GateCommandFunc());
         commandMap.put(SocketCommandEnum.IMAGE_SAVE.getCommand(), new ImageSaverFunc());
+        commandMap.put(SocketCommandEnum.IMPORT_PICKUP_CODE.getCommand(), new PickupExcelReceiverFunc());
     }
 
     public synchronized static void startServer(Context context) {
