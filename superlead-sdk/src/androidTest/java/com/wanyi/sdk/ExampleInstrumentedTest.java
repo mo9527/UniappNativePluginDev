@@ -1,4 +1,4 @@
-package com.vin.wifi.plugin.scaner;
+package com.wanyi.sdk;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.vin.wifi.device.scaner.test", appContext.getPackageName());
+        assertEquals("com.wanyi.superlead.test", appContext.getPackageName());
     }
 }

@@ -1,4 +1,4 @@
-package com.wanyi.plugins.commandFunc;
+package com.wanyi.plugins.socket.commandFunc;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;

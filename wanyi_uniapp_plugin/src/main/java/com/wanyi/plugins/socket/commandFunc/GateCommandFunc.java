@@ -1,4 +1,4 @@
-package com.wanyi.plugins.commandFunc;
+package com.wanyi.plugins.socket.commandFunc;
 
 import static com.wanyi.plugins.enums.OperationLogType.OPEN_GATE;
 
@@ -13,8 +13,6 @@ import java.util.function.Function;
 public class GateCommandFunc implements Function<FuncInputData, JSONObject> {
     @Override
     public JSONObject apply(FuncInputData data) {
-        JSONObject jsonObject = GateCommandExecutor.openGate(data.getContext());
-        OperationLogService.getInstance().addLog(data.getContext(), OPEN_GATE, OPEN_GATE.getDesc());
-        return jsonObject;
+        return GateCommandExecutor.openGate(data.getContext());
     }
 }

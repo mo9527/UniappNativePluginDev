@@ -46,8 +46,6 @@ public class CargoStockMonitorService {
 
     public void init(Context context) {
         Log.d(TAG, "CargoStockMonitorService created");
-        AppDatabase database = AppDatabase.getDatabase(context.getApplicationContext());
-        pickupCodeDao = database.pickupCodeDao();
         Runnable task = new Runnable(){
 
             @Override
@@ -60,16 +58,18 @@ public class CargoStockMonitorService {
         executor.scheduleAtFixedRate(task, 3, TASK_INTERVAL, TimeUnit.SECONDS);
     }
 
-
-
     private void sendStockMessage(Context context){
+        CargoStockVo  vo = getCargoStockVo(context);
+        WebsocketServer.sendMessage(Response.success(vo).toJSONString());
+    }
+
+    public CargoStockVo getCargoStockVo(Context context){
+        AppDatabase database = AppDatabase.getDatabase(context.getApplicationContext());
+        pickupCodeDao = database.pickupCodeDao();
         int codeLeft = pickupCodeDao.countOfUnUsed();
         int codeUsed = pickupCodeDao.countOfUsed();;
         LocalCache localCache = LocalCache.getInstance(context.getApplicationContext());
         int cargoLeft = localCache.getInt(CacheConstants.CARGO_STOCK_LEFT);
-
-        CargoStockVo  vo = new CargoStockVo(codeLeft, cargoLeft, codeUsed);
-
-        WebsocketServer.sendMessage(Response.success(vo).toJSONString());
+        return  new CargoStockVo(codeLeft, cargoLeft, codeUsed);
     }
 }

@@ -11,14 +11,13 @@ import com.lztek.toolkit.Lztek;
 import com.lztek.toolkit.SerialPort;
 import com.wanyi.plugins.cache.CargoCacheOperator;
 import com.wanyi.plugins.cache.LocalCache;
-import com.wanyi.plugins.commandFunc.PickupExcelReceiverFunc;
 import com.wanyi.plugins.constants.CacheConstants;
 import com.wanyi.plugins.constants.GateConstants;
 import com.wanyi.plugins.entity.DeviceOperationLog;
 import com.wanyi.plugins.enums.GateOrderEnum;
 import com.wanyi.plugins.enums.SerialPortEnum;
+import com.wanyi.plugins.model.CargoStockVo;
 import com.wanyi.plugins.model.Device;
-import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
 import com.wanyi.plugins.order.CargoMachineCommandExecutor;
 import com.wanyi.plugins.order.CargoMoveCommandExecutor;
@@ -26,8 +25,6 @@ import com.wanyi.plugins.order.PickupCodeExecutor;
 import com.wanyi.plugins.order.ScrewRodCommandExecutor;
 import com.wanyi.plugins.permissions.PermissionNeed;
 import com.wanyi.plugins.qrcode.QrCodeScannerService;
-import com.wanyi.plugins.serialport.SerialPortCom0DataCallback;
-import com.wanyi.plugins.serialport.SerialPortCom2DataCallback;
 import com.wanyi.plugins.serialport.SerialPortManager;
 import com.wanyi.plugins.service.CargoStockMonitorService;
 import com.wanyi.plugins.service.DeviceStatusCheckService;
@@ -49,7 +46,6 @@ import java.util.Map;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
 import io.dcloud.feature.uniapp.bridge.UniJSCallback;
 import io.dcloud.feature.uniapp.common.UniModule;
-import io.dcloud.feature.uniapp.utils.UniLogUtils;
 
 public class WanyiPlugins extends UniModule {
     private final static String TAG = "WanyiPlugins";
@@ -273,6 +269,12 @@ public class WanyiPlugins extends UniModule {
             return;
         }
         callback.invoke(Response.fail());
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void getCargoStock(JSONObject options, final UniJSCallback callback){
+        CargoStockVo cargoStockVo = CargoStockMonitorService.getInstance().getCargoStockVo(mUniSDKInstance.getContext());
+        callback.invoke(Response.success(cargoStockVo));
     }
 
 

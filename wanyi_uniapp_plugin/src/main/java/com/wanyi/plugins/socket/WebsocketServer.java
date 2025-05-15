@@ -5,9 +5,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
-import com.wanyi.plugins.commandFunc.GateCommandFunc;
-import com.wanyi.plugins.commandFunc.ImageSaverFunc;
-import com.wanyi.plugins.commandFunc.PickupExcelReceiverFunc;
+import com.wanyi.plugins.socket.commandFunc.GateCommandFunc;
+import com.wanyi.plugins.socket.commandFunc.ImageSaverFunc;
+import com.wanyi.plugins.socket.commandFunc.PickupExcelReceiverFunc;
 import com.wanyi.plugins.enums.SocketCommandEnum;
 import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
@@ -16,9 +16,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,7 +87,7 @@ public class WebsocketServer {
                                 Function<FuncInputData, JSONObject> func = commandMap.get(action);
                                 assert func != null;
 
-                                FuncInputData data = new FuncInputData(context, message);
+                                FuncInputData data = new FuncInputData(context, message, conn);
                                 JSONObject res = func.apply(data);
                                 conn.send(res.toJSONString());
                             } else {
@@ -123,6 +121,20 @@ public class WebsocketServer {
         }catch (Exception e){
             Log.e(TAG, "发送socket消息失败 error:" + e.getMessage(), e);
         }
+    }
+
+    public synchronized static void sendMessage(WebSocket conn, String message){
+        try {
+            if (conn != null && conn.isOpen()){
+                conn.send(message);
+            }
+        }catch (Exception e){
+            Log.e(TAG, "发送socket消息失败 error:" + e.getMessage(), e);
+        }
+    }
+
+    public synchronized static void sendMessage(String remoteIp, String message){
+        sendMessage(clientMap.get(remoteIp), message);
     }
 
     public static boolean isServerRunning() {

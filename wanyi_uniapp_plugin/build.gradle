@@ -1,8 +1,6 @@
 plugins {
     id 'com.android.library'
-    id 'com.gradleup.shadow'
 }
-
 
 android {
     namespace 'com.wanyi.plugins'
@@ -51,8 +49,7 @@ configurations.all {
 
 dependencies {
 
-    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
-    compileOnly fileTree(dir: 'libs', include: ['*.aar'])
+    compileOnly fileTree(dir: './libs', include: ['*.jar'])
 
     compileOnly fileTree(dir: '../app/libs', include: ['uniapp-v8-release.aar', 'superlead-sdk.aar'])
 
@@ -62,11 +59,11 @@ dependencies {
     implementation 'com.alibaba:fastjson:1.2.83'
     implementation 'com.facebook.fresco:fresco:1.13.0'
 
+
     //****************************以下包依赖需要配置到package.json中******************************
     implementation 'org.java-websocket:Java-WebSocket:1.6.0'
 
 //    二维码扫描相关依赖
-//    embed (name : 'superlead-sdk', ext:'aar')
     implementation 'com.github.felHR85:UsbSerial:4.5.2'
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
@@ -90,3 +87,4 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'*/
 }
+

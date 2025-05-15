@@ -47,7 +47,7 @@ public class CargoCacheOperator {
      */
     public boolean cargoDecrease(int floor) {
         if (floor < 1 || floor > 7) {
-            throw new RuntimeException("楼层号超出范围");
+            throw new RuntimeException("楼层号超出范围: " + floor);
         }
         try {
             // 减少总库存

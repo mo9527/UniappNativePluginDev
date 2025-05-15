@@ -1,4 +1,4 @@
-package com.wanyi.plugins.commandFunc;
+package com.wanyi.plugins.socket.commandFunc;
 
 import android.content.Context;
 import android.util.Log;
@@ -55,7 +55,7 @@ public class PickupExcelReceiverFunc implements Function<FuncInputData, JSONObje
                 PickupCodeExecutor.executeInsertPickupCode(context, dataMaps, type);
             }catch (Exception e){
                 Log.e(TAG, "导入取货码出错: ", e);
-                return Response.fail("数据格式错误");
+                return Response.fail("导入失败");
             }
         }
         return Response.success();

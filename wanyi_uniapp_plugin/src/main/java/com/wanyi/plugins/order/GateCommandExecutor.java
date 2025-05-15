@@ -1,10 +1,13 @@
 package com.wanyi.plugins.order;
 
+import static com.wanyi.plugins.enums.OperationLogType.OPEN_GATE;
+
 import android.content.Context;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
 import com.wanyi.plugins.constants.GateConstants;
+import com.wanyi.plugins.service.OperationLogService;
 import com.wanyi.plugins.states.GateState;
 import com.wanyi.plugins.enums.GateOrderEnum;
 import com.wanyi.plugins.enums.SerialPortEnum;
@@ -25,6 +28,7 @@ public class GateCommandExecutor {
         SerialPortManager portManager = SerialPortManager.getInstance();
         portManager.write(PORT_NAME, openGate1Command);
         Log.i(TAG, "写入开锁命令数据：" + openGate1Command);
+        OperationLogService.getInstance().addLog(context.getApplicationContext(), OPEN_GATE, OPEN_GATE.getDesc());
         return Response.success();
     }
 
