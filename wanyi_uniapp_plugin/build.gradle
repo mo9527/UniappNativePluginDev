@@ -4,8 +4,6 @@ plugins {
 }
 
 
-apply plugin: 'com.gradleup.shadow'
-
 android {
     namespace 'com.wanyi.plugins'
     compileSdk 35
@@ -42,9 +40,6 @@ repositories {
     flatDir {
         dirs 'libs'
     }
-    jcenter()
-    mavenCentral()
-    maven{url 'https://jitpack.io'}
 }
 
 
@@ -55,9 +50,9 @@ configurations.all {
 }
 
 dependencies {
-    def room_version = "2.7.0"
 
-    compileOnly fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly fileTree(dir: 'libs', include: ['*.aar'])
 
     compileOnly fileTree(dir: '../app/libs', include: ['uniapp-v8-release.aar', 'superlead-sdk.aar'])
 
@@ -66,16 +61,18 @@ dependencies {
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.alibaba:fastjson:1.2.83'
     implementation 'com.facebook.fresco:fresco:1.13.0'
+
+    //****************************以下包依赖需要配置到package.json中******************************
     implementation 'org.java-websocket:Java-WebSocket:1.6.0'
 
 //    二维码扫描相关依赖
-//    implementation (name : 'superlead-sdk', ext:'aar')
+//    embed (name : 'superlead-sdk', ext:'aar')
     implementation 'com.github.felHR85:UsbSerial:4.5.2'
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-runtime:2.7.0"
+    annotationProcessor "androidx.room:room-compiler:2.7.0"
 
 
     implementation "org.apache.commons:commons-lang3:3.12.0"

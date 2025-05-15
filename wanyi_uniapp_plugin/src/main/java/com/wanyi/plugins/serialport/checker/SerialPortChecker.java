@@ -19,7 +19,7 @@ public class SerialPortChecker {
             }
 
             // 发送测试命令
-            serialManager.write(device.getSerialPort(), "AT\r\n");
+            serialManager.write(device.getSerialPort(), "AT");
 
             // 等待响应（简单模拟，实际需使用回调或超时机制）
             Thread.sleep(100); // 等待 100ms

@@ -17,6 +17,7 @@ import com.wanyi.plugins.constants.GateConstants;
 import com.wanyi.plugins.entity.DeviceOperationLog;
 import com.wanyi.plugins.enums.GateOrderEnum;
 import com.wanyi.plugins.enums.SerialPortEnum;
+import com.wanyi.plugins.model.Device;
 import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
 import com.wanyi.plugins.order.CargoMachineCommandExecutor;
@@ -29,6 +30,7 @@ import com.wanyi.plugins.serialport.SerialPortCom0DataCallback;
 import com.wanyi.plugins.serialport.SerialPortCom2DataCallback;
 import com.wanyi.plugins.serialport.SerialPortManager;
 import com.wanyi.plugins.service.CargoStockMonitorService;
+import com.wanyi.plugins.service.DeviceStatusCheckService;
 import com.wanyi.plugins.service.OperationLogService;
 import com.wanyi.plugins.socket.WebsocketServer;
 import com.wanyi.plugins.order.GateCommandExecutor;
@@ -71,7 +73,7 @@ public class WanyiPlugins extends UniModule {
 
 
         LocalCache localCache = LocalCache.getInstance(context);
-        localCache.set(CacheConstants.X_EACH_FLOOR_STOCK, "5");
+        localCache.setInt(CacheConstants.X_EACH_FLOOR_STOCK, 5);
 
         Log.i(TAG, "查询缓存：" + localCache.get("cargoStockTotal"));
 
@@ -176,14 +178,14 @@ public class WanyiPlugins extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public void restCargoStock(JSONObject options, final UniJSCallback callback){
-        int total = options.getIntValue("total");
-        if (total % 8 != 0){
-            callback.invoke(Response.fail("请输入8的倍数"));
+        int itemTotal = options.getIntValue("itemTotal");
+        if (itemTotal <= 1){
+            callback.invoke(Response.fail("每层货物数量必须大于1"));
             return;
         }
-        int eachFloorCargos = total/8;
+        int total = itemTotal * 7;
         CargoCacheOperator cargoCacheOperator = CargoCacheOperator.getInstance(mUniSDKInstance.getContext());
-        cargoCacheOperator.resetCargoStock(total, eachFloorCargos);
+        cargoCacheOperator.resetCargoStock(total, itemTotal);
         CargoMachineCommandExecutor.getInstance().resetPosition(mUniSDKInstance.getContext());
         callback.invoke(Response.success());
     }
@@ -201,17 +203,9 @@ public class WanyiPlugins extends UniModule {
 
     @UniJSMethod(uiThread = true)
     public void devicesCheck(JSONObject options, final UniJSCallback callback){
-        for (int i = 0; i < 5; i++) {
-            try {
-                Log.i(TAG, "设备检查中：" + i);
-                LocalCache localCache = new LocalCache(mUniSDKInstance.getContext());
-                String res = localCache.get("cargoStockTotal");
-                callback.invokeAndKeepAlive(Response.success("设备"+i+"状态：OK "  + res));
-                Thread.sleep(1000);
-            }catch (Exception e){
-                UniLogUtils.i("设备检查出错", e);
-            }
-        }
+        List<Device> deviceList = DeviceStatusCheckService.getInstance().checkDeviceStatus(mUniSDKInstance.getContext());
+        Log.i(TAG, "设备检查结果：" + JSONObject.toJSONString(deviceList));
+        callback.invoke(Response.success(deviceList));
     }
 
     /**
@@ -273,11 +267,13 @@ public class WanyiPlugins extends UniModule {
         OperationLogService logService = OperationLogService.getInstance();
         List<String> types = typeList.toJavaList(String.class);
         List<DeviceOperationLog> logListPage = logService.getLogListPage(types, mUniSDKInstance.getContext(), pageNum);
+        Log.i(TAG, "获取操作日志：" + JSONObject.toJSONString(logListPage));
         if (CollectionUtils.isNotEmpty(logListPage)){
             callback.invoke(Response.success(logListPage));
             return;
         }
         callback.invoke(Response.fail());
     }
+
 
 }

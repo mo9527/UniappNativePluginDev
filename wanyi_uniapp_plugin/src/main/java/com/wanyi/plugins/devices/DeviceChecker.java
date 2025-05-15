@@ -23,9 +23,9 @@ public class DeviceChecker extends Service {
     public void onCreate() {
         super.onCreate();
         // 初始化设备列表
-        devices.add(new Device("usb_001", "USB"));
-        devices.add(new Device("sensor_001", "Sensor"));
-        devices.add(new Device("camera_001", "Camera"));
+//        devices.add(new Device("usb_001", "USB"));
+//        devices.add(new Device("sensor_001", "Sensor"));
+//        devices.add(new Device("camera_001", "Camera"));
         Log.d(TAG, "Service created");
         startMonitoring();
     }

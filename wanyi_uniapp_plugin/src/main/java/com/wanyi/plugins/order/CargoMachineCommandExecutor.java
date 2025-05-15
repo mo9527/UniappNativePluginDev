@@ -49,7 +49,7 @@ public class CargoMachineCommandExecutor {
      * @param context
      */
     public synchronized void beginPickup(Context context, String code) {
-        if (code == null || "".equals(code)){
+        if (code == null || code.isEmpty()){
             Log.e(TAG, "取货码为空");
             return;
         }

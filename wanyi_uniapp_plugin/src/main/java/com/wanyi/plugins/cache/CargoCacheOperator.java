@@ -26,13 +26,13 @@ public class CargoCacheOperator {
     }
 
     public void resetCargoStock(int total, int eachFloorStock) {
-        localCache.set(CacheConstants.F1_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F2_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F3_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F4_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F5_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F6_STOCK_LEFT, String.valueOf(eachFloorStock));
-        localCache.set(CacheConstants.F7_STOCK_LEFT, String.valueOf(eachFloorStock));
+        localCache.setInt(CacheConstants.F1_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F2_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F3_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F4_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F5_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F6_STOCK_LEFT, eachFloorStock);
+        localCache.setInt(CacheConstants.F7_STOCK_LEFT, eachFloorStock);
         localCache.setInt(CacheConstants.CARGO_STOCK_TOTAL, total);
         localCache.setInt(CacheConstants.CARGO_STOCK_LEFT, total);
         localCache.setInt(CacheConstants.X_EACH_FLOOR_STOCK, eachFloorStock);
@@ -55,7 +55,7 @@ public class CargoCacheOperator {
             if (totalLeft <= 0) {
                 throw new RuntimeException("总库存已空");
             }
-            localCache.set(CacheConstants.CARGO_STOCK_LEFT, String.valueOf(totalLeft - 1));
+            localCache.setInt(CacheConstants.CARGO_STOCK_LEFT, totalLeft - 1);
 
             // 获取当前楼层库存键, 往下递减楼层
             String currentFloorKey = getFloorKey(floor);
@@ -66,13 +66,13 @@ public class CargoCacheOperator {
 
             if (currentFloorStock > 0) {
                 // 当前楼层有库存，减少当前楼层库存
-                localCache.set(currentFloorKey, String.valueOf(currentFloorStock - 1));
+                localCache.setInt(currentFloorKey, currentFloorStock - 1);
                 return false;
             } else if (!nextFloorKey.isEmpty()) {
                 // 当前楼层无库存，减少下一层楼库存
                 int nextFloorStock = getSafeInteger(localCache.getInt(nextFloorKey), 0);
                 if (nextFloorStock > 0) {
-                    localCache.set(nextFloorKey, String.valueOf(nextFloorStock - 1));
+                    localCache.setInt(nextFloorKey, nextFloorStock - 1);
                     return true;
                 } else {
                     throw new RuntimeException("第 " + floor + " 层及其以下楼层库存已空");
