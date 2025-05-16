@@ -25,7 +25,7 @@ public interface PickupCodeDao {
     @Query("SELECT * FROM pickup_code WHERE status = 0 LIMIT 1")
     PickupCode pickOneUnUsed();
 
-    @Query("SELECT * FROM pickup_code WHERE code = :code")
+    @Query("SELECT * FROM pickup_code WHERE code = :code limit 1")
     PickupCode selectByCode(String code);
 
     @Update

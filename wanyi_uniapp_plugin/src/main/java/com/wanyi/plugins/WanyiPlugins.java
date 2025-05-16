@@ -1,5 +1,7 @@
 package com.wanyi.plugins;
 
+import static com.wanyi.plugins.enums.OperationLogType.OPEN_GATE;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -53,8 +55,6 @@ public class WanyiPlugins extends UniModule {
     private final static String OPEN = GateConstants.DOOR_OPEN;
     private final static String CLOSE = GateConstants.DOOR_CLOSE;
 
-    private SerialPortManager serialPortManager;
-
     /**
      * 初始化一些东西
      * @param options
@@ -68,16 +68,16 @@ public class WanyiPlugins extends UniModule {
         CargoStockMonitorService.getInstance().init(context);
 
 
-        LocalCache localCache = LocalCache.getInstance(context);
-        localCache.setInt(CacheConstants.X_EACH_FLOOR_STOCK, 5);
-
-        Log.i(TAG, "查询缓存：" + localCache.get("cargoStockTotal"));
+//        LocalCache localCache = LocalCache.getInstance(context);
+//        localCache.setInt(CacheConstants.X_EACH_FLOOR_STOCK, 5);
+//
+//        Log.i(TAG, "查询缓存：" + localCache.get("cargoStockTotal"));
 
         //初始化库存
-        CargoCacheOperator.getInstance(context).resetCargoStock(40, 5);
+//        CargoCacheOperator.getInstance(context).resetCargoStock(40, 5);
 
         SerialPortManager.getInstance().init(context);
-        CargoMachineCommandExecutor.getInstance().resetPosition(context);
+//        CargoMachineCommandExecutor.getInstance().resetPosition(context);
 
         ExcelHelper.initProperties();
     }
@@ -88,10 +88,7 @@ public class WanyiPlugins extends UniModule {
         Log.i(TAG, "销毁 onActivityDestroy..........");
         WebsocketServer.stopServer();
         QrCodeScannerService.close(mUniSDKInstance.getContext());
-
-        if (serialPortManager != null){
-            serialPortManager.stopAllListening();
-        }
+        SerialPortManager.getInstance().stopAllListening();
     }
 
 
@@ -113,6 +110,7 @@ public class WanyiPlugins extends UniModule {
     @UniJSMethod(uiThread = false)
     public void openGate(JSONObject options, final UniJSCallback callback) {
         JSONObject result = GateCommandExecutor.openGate(mUniSDKInstance.getContext());
+        OperationLogService.getInstance().addLog(mUniSDKInstance.getContext().getApplicationContext(), OPEN_GATE, OPEN_GATE.getDesc());
         callback.invoke(result);
     }
 
@@ -161,8 +159,8 @@ public class WanyiPlugins extends UniModule {
     @UniJSMethod(uiThread = false)
     public void screwRodMoveTo(JSONObject options, final UniJSCallback callback){
         int floor = options.getIntValue("floor");
-        boolean success = ScrewRodCommandExecutor.moveTo(mUniSDKInstance.getContext(), floor);
-        callback.invoke(success ? Response.success() : Response.fail());
+        ScrewRodCommandExecutor.moveTo(mUniSDKInstance.getContext(), floor);
+        callback.invoke( Response.success());
     }
 
     @UniJSMethod(uiThread = false)
@@ -224,6 +222,7 @@ public class WanyiPlugins extends UniModule {
                 callback.invoke(Response.success());
             }
         }catch (Exception e){
+            Log.e(TAG, "导入取货码出错: ", e);
             callback.invoke(Response.fail(e.getMessage()));
         }
     }
@@ -268,7 +267,7 @@ public class WanyiPlugins extends UniModule {
             callback.invoke(Response.success(logListPage));
             return;
         }
-        callback.invoke(Response.fail());
+        callback.invoke(Response.success());
     }
 
     @UniJSMethod(uiThread = false)

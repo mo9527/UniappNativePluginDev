@@ -6,6 +6,7 @@ import com.superlead.sdk.Scanner;
 import com.superlead.sdk.ScannerInstanceHolder;
 import com.wanyi.plugins.enums.DeviceStatus;
 import com.wanyi.plugins.model.Device;
+import com.wanyi.plugins.qrcode.QrCodeScannerService;
 
 public class QrCodeScannerChecker extends AbstractBootDeviceChecker{
 
@@ -34,6 +35,10 @@ public class QrCodeScannerChecker extends AbstractBootDeviceChecker{
             device.setStatus(DeviceStatus.NORMAL);
             device.setFaultReason("");
             return device;
+        }
+        if (!QrCodeScannerService.isRunning()){
+            device.setStatus(DeviceStatus.FAULT);
+            device.setFaultReason("二维码读取器服务未启动");
         }
         return device;
     }

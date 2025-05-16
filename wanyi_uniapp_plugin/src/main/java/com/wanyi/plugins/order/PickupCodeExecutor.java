@@ -26,16 +26,20 @@ public class PickupCodeExecutor {
 
     private static PickupCodeDao pickupCodeDao;
     public static boolean importPickupCode(Context context, String filePath, int insertType) {
-        AppDatabase appDatabase = AppDatabase.getDatabase(context);
-        pickupCodeDao = appDatabase.pickupCodeDao();
-
         List<Map<String, Object>> dataMaps = ExcelHelper.readExcel(filePath, context);
         Map<String, Object> dataMap = dataMaps.get(0);
         if (MapUtils.isEmpty(dataMap)){
             throw new BusinessException("取货码不能为空");
         }
 
-        executeInsertPickupCode(context, dataMaps, insertType);
+        new Thread(() -> {
+            try {
+                executeInsertPickupCode(context, dataMaps, insertType);
+            } catch (Exception e) {
+                Log.e(TAG, "导入取货码出错: ", e);
+            }
+        }).start();
+
         return true;
     }
 
@@ -67,12 +71,13 @@ public class PickupCodeExecutor {
                     existed.setStatus(0);
                     pickupCodeDao.updateRecord(existed);
                 }else {
-                    throw new BusinessException("取货码已存在");
+                    Log.i(TAG, "取货码已存在，跳过：" + code);
                 }
             }
             insertList[i] = new PickupCode(projectCode, code);
         }
         pickupCodeDao.insertAll(insertList);
+        Log.i(TAG, "导入取货码成功，数量：" + insertList.length);
     }
 
 }

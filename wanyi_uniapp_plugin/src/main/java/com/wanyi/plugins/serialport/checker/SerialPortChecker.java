@@ -13,7 +13,6 @@ public class SerialPortChecker {
     public static void checkDevice(Device device, Context context) {
         SerialPortManager serialManager = SerialPortManager.getInstance();
         try {
-            // 启动监听（如果未启动）
             if (!serialManager.isRunning(device.getSerialPort())) {
                 serialManager.startListening(context, device.getSerialPort());
             }
@@ -21,9 +20,7 @@ public class SerialPortChecker {
             // 发送测试命令
             serialManager.write(device.getSerialPort(), "AT");
 
-            // 等待响应（简单模拟，实际需使用回调或超时机制）
             Thread.sleep(100); // 等待 100ms
-            // 假设响应正常，实际应通过回调验证
             device.setStatus(DeviceStatus.NORMAL);
             device.setFaultReason("");
             Log.d(TAG, "设备正常: " + device.getId());

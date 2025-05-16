@@ -6,6 +6,7 @@ import android.util.Log;
 import com.lztek.toolkit.Lztek;
 import com.lztek.toolkit.SerialPort;
 import com.wanyi.plugins.cache.LocalCache;
+import com.wanyi.plugins.constants.AppConstants;
 import com.wanyi.plugins.constants.CacheConstants;
 import com.wanyi.plugins.states.CargoPickupState;
 import com.wanyi.plugins.states.ScrewRodState;
@@ -33,7 +34,11 @@ public class ScrewRodCommandExecutor {
      * @param floor
      * @return
      */
-    public synchronized static boolean moveTo(Context context, int floor){
+    public synchronized static void moveTo(Context context, int floor){
+        if (floor < 1 || floor > AppConstants.MAX_FLOOR){
+            Log.e(TAG, "楼层超出范围: " + floor);
+            return;
+        }
         Log.i(TAG, "丝杆去往第几层： " + floor);
         ScrewRodOrderEnum floorOrder = ScrewRodOrderEnum.getFloorOrder(floor);
         String command = floorOrder.getOrder();
@@ -42,7 +47,6 @@ public class ScrewRodCommandExecutor {
         SerialPortManager portManager = SerialPortManager.getInstance();
         portManager.write(portName, command);
         ScrewRodState.setCurrentState(ScrewRodState.STATE_MOVING);
-        return false;
     }
 
     public synchronized static void backToCurrentFloor(Context context){
@@ -70,7 +74,7 @@ public class ScrewRodCommandExecutor {
                 return false;
             }
 
-            ScrewRodOrderEnum checkMotorCurrentFloor = ScrewRodOrderEnum.CHECK_MOTOR_CURRENT_FLOOR;
+            ScrewRodOrderEnum checkMotorCurrentFloor = ScrewRodOrderEnum.SCREW_ROD_POSITION;
             ScrewRodOrderEnum targetMotorPosition = ScrewRodOrderEnum.getFloorPosition(targetFloor);
             String command = checkMotorCurrentFloor.getOrder();
             Log.i(TAG, "查询电机当前坐标命令：" + command);
@@ -143,6 +147,17 @@ public class ScrewRodCommandExecutor {
                 return true;
             }
         }while (System.currentTimeMillis() - startTime < TIMEOUT);
+        return false;
+    }
+
+    /**
+     * 步进电机当前坐标
+     * @param context
+     * @return
+     */
+    public synchronized static boolean getScrewRodCurrentPosition(Context context){
+        SerialPortManager manager = SerialPortManager.getInstance();
+        manager.write(portName, ScrewRodOrderEnum.SCREW_ROD_POSITION.getOrder());
         return false;
     }
 }

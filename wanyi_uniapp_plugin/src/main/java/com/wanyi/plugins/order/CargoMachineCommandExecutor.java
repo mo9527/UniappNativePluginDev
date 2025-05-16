@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.wanyi.plugins.R;
 import com.wanyi.plugins.cache.CargoCacheOperator;
 import com.wanyi.plugins.cache.LocalCache;
+import com.wanyi.plugins.constants.AppConstants;
 import com.wanyi.plugins.constants.CacheConstants;
 import com.wanyi.plugins.dao.PickupCodeDao;
 import com.wanyi.plugins.database.AppDatabase;
@@ -60,6 +61,7 @@ public class CargoMachineCommandExecutor {
         code = code.trim();
 
         String finalCode = code;
+        int currentFloor = 0;
         try {
             AppDatabase appDatabase = AppDatabase.getDatabase(context);
             pickupCodeDao = appDatabase.pickupCodeDao();
@@ -81,36 +83,38 @@ public class CargoMachineCommandExecutor {
 
             LocalCache localCache = LocalCache.getInstance(context);
             int floor = localCache.getInt(CacheConstants.SCREW_ROD_CURRENT_FLOOR);
+            currentFloor = floor;
 
             //是否去往下一层（上层已经空了？）
             CargoCacheOperator cargoCacheOperator = CargoCacheOperator.getInstance(context);
             boolean goingDownNextFloor = cargoCacheOperator.cargoDecrease(floor);
 
             if (goingDownNextFloor){
-                floor = floor - 1;
-                boolean yMoveOrderOk = ScrewRodCommandExecutor.moveTo(context, floor);
-                Log.i(TAG, "丝杆到达目标楼层：" + floor + " 结果：" + yMoveOrderOk);
-                if (!yMoveOrderOk) return;
+                Log.i(TAG, "当前层无货，准备取货下一层：" + (floor-1));
+                int downFloor = floor - 1;
+                ScrewRodCommandExecutor.moveTo(context, downFloor);
 
-                boolean arrived = ScrewRodCommandExecutor.checkArrivedAt(context, floor);
+                boolean arrived = ScrewRodCommandExecutor.checkArrivedAt(context, downFloor);
+                Log.i(TAG, "丝杆到达目标楼层：" + downFloor + " 结果：" + arrived);
                 if (arrived){
-                    localCache.setInt(CacheConstants.SCREW_ROD_CURRENT_FLOOR, floor);
-                    CargoMoveCommandExecutor.cargoPush(context, floor);
+                    localCache.setInt(CacheConstants.SCREW_ROD_CURRENT_FLOOR, downFloor);
+                    CargoMoveCommandExecutor.cargoPush(context, downFloor);
+                    currentFloor = downFloor;
+                }else {
+                    Log.e(TAG, "取货失败，丝杆未到达目标楼层：" + downFloor);
                 }
             }else {
                 Log.i(TAG, "当前层货物数量充足，直接取货: " + floor);
                 CargoMoveCommandExecutor.cargoPush(context, floor);
             }
 
-
-
             long startTime = System.currentTimeMillis();
             do {
                 //等待货道停止
                 if (CargoPusherState.getCurrentState() == CargoPusherState.STATE_STOP){
                     //抬升货物到最上层
-                    ScrewRodCommandExecutor.moveTo(context, 8);
-                    boolean arrived = ScrewRodCommandExecutor.checkArrivedAt(context, 8);
+                    ScrewRodCommandExecutor.moveTo(context, AppConstants.MAX_FLOOR);
+                    boolean arrived = ScrewRodCommandExecutor.checkArrivedAt(context, AppConstants.MAX_FLOOR);
                     if (arrived){
                         GateCommandExecutor.openGate(context);
                         boolean cargoPickupB = ScrewRodCommandExecutor.checkCargoPickup();
@@ -119,7 +123,7 @@ public class CargoMachineCommandExecutor {
                             if (gateClosed){
                                 //返回当前层(等一等再回)
                                 Thread.sleep(3000);
-                                ScrewRodCommandExecutor.moveTo(context, floor);
+                                ScrewRodCommandExecutor.moveTo(context, currentFloor);
                                 break;
                             }
                         }
@@ -131,14 +135,15 @@ public class CargoMachineCommandExecutor {
             oneEntity.setStatus(1);
 
             String env = context.getResources().getString(R.string.env);
-            if ("prod".equals(env)){
+            if (!"dev".equals(env)){
                 pickupCodeDao.updateRecord(oneEntity);
             }
             PickupCode newEntity = pickupCodeDao.selectByCode(finalCode);
             Log.i(TAG, "取货码状态：" + JSON.toJSONString(newEntity));
-            OperationLogService.getInstance().addLog(context, CARGO_TAKE, CARGO_TAKE.getDesc());
+            OperationLogService.getInstance().addLog(context, CARGO_TAKE,  CARGO_TAKE.getDesc() + "(" + finalCode + ")");
         }catch (Exception e){
             Log.e(TAG, "执行取货操作失败", e);
+            ScrewRodCommandExecutor.moveTo(context, currentFloor);
         }
     }
 
@@ -147,6 +152,8 @@ public class CargoMachineCommandExecutor {
      * @param context
      */
     public synchronized void resetPosition(Context context) {
-        ScrewRodCommandExecutor.moveTo(context, 7);
+        ScrewRodCommandExecutor.moveTo(context, AppConstants.MAX_FLOOR - 1);
+        LocalCache localCache = LocalCache.getInstance(context);
+        localCache.setInt(CacheConstants.SCREW_ROD_CURRENT_FLOOR, AppConstants.MAX_FLOOR - 1);
     }
 }

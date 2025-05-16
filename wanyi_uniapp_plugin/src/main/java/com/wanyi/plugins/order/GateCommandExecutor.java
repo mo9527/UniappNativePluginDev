@@ -28,7 +28,6 @@ public class GateCommandExecutor {
         SerialPortManager portManager = SerialPortManager.getInstance();
         portManager.write(PORT_NAME, openGate1Command);
         Log.i(TAG, "写入开锁命令数据：" + openGate1Command);
-        OperationLogService.getInstance().addLog(context.getApplicationContext(), OPEN_GATE, OPEN_GATE.getDesc());
         return Response.success();
     }
 

@@ -56,11 +56,16 @@ public class QrCodeScannerService {
 
     public static void close(Context context) {
         try {
+            isRunning = false;
             context.unregisterReceiver(barcodeReceiver);
             context.stopService(barcodeIntent);
             ScannerInstanceHolder.INSTANCE.getScanner().close();
         }catch (Exception e){
             Log.e(TAG, "closeScanner error:" + e.getMessage(), e);
         }
+    }
+
+    public static boolean isRunning() {
+        return isRunning;
     }
 }

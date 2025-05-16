@@ -183,6 +183,7 @@ public class SerialPortManager {
      */
     public void init(Context context){
         //初始化0、2串口数据监听器
+        Log.i(TAG, "初始化串口管理器");
         String port0 = SerialPortEnum._0.getPath();
         String port2 = SerialPortEnum._2.getPath();
 

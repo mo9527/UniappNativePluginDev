@@ -65,7 +65,7 @@ public class SerialPortCom2DataCallback implements SerialPortManager.SerialDataC
 
     @Override
     public void onError(String port, String error) {
-
+        Log.e(TAG, "串口 "+port+" 监听器出错: " + error);
     }
 
     private int getArriveFloor(String msg){

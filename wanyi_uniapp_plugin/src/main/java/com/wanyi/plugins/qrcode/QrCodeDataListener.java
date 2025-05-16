@@ -31,7 +31,7 @@ public class QrCodeDataListener implements BarcodeEventListener {
     }
 
     public QrCodeDataListener(Context context) {
-        Log.i(TAG, "QrCodeListener init");
+        Log.i(TAG, "初始化二维码扫描监听器");
         this.mContext = context;
         localCache = new LocalCache(context);
     }

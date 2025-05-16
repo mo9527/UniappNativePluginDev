@@ -13,7 +13,8 @@ public abstract class AbstractBootDeviceChecker {
             return new AbstractBootDeviceChecker[]{
                     new MicrophoneChecker(),
                     new UsbCameraChecker(),
-                    new QrCodeScannerChecker()
+                    new QrCodeScannerChecker(),
+                    new AudioBoxChecker()
             };
         } catch (Exception e) {
             Log.i(TAG, "获取设备检查器失败: ", e);
