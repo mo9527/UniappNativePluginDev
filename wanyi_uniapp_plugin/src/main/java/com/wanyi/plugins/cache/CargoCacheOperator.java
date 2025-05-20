@@ -16,10 +16,8 @@ public class CargoCacheOperator {
     public static CargoCacheOperator getInstance(Context context) {
         if (instance == null) {
             synchronized (CargoCacheOperator.class) {
-                if (instance == null) {
-                    instance = new CargoCacheOperator();
-                    localCache = LocalCache.getInstance(context);
-                }
+                instance = new CargoCacheOperator();
+                localCache = LocalCache.getInstance(context.getApplicationContext());
             }
         }
         return instance;

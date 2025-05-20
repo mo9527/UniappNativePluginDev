@@ -11,10 +11,10 @@ public abstract class AbstractBootDeviceChecker {
     public static AbstractBootDeviceChecker[] getAllDeviceChecker() {
         try {
             return new AbstractBootDeviceChecker[]{
-                    new MicrophoneChecker(),
-                    new UsbCameraChecker(),
-                    new QrCodeScannerChecker(),
-                    new AudioBoxChecker()
+                    MicrophoneChecker.getInstance(),
+                    UsbCameraChecker.getInstance(),
+                    QrCodeScannerChecker.getInstance(),
+                    AudioBoxChecker.getInstance()
             };
         } catch (Exception e) {
             Log.i(TAG, "获取设备检查器失败: ", e);

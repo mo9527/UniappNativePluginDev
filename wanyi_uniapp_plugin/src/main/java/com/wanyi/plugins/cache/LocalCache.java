@@ -15,7 +15,7 @@ public class LocalCache {
     private SharedPreferences sharedPreferences;
 
     public LocalCache (Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
     }
 
     //创建单例模式
