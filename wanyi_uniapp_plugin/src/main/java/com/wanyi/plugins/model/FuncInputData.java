@@ -4,18 +4,16 @@ import android.content.Context;
 
 import org.java_websocket.WebSocket;
 
-import java.nio.ByteBuffer;
-
 public class FuncInputData {
     private Context context;
 
     private WebSocket client;
 
-    private String payload;
+    private String data;
 
-    public FuncInputData(Context context, String payload, WebSocket client) {
+    public FuncInputData(Context context, String data, WebSocket client) {
         this.context = context;
-        this.payload = payload;
+        this.data = data;
         this.client = client;
     }
 
@@ -27,12 +25,12 @@ public class FuncInputData {
         this.context = context;
     }
 
-    public String getPayload() {
-        return payload;
+    public String getData() {
+        return data;
     }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public WebSocket getClient() {

@@ -5,14 +5,12 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.wanyi.plugins.entity.PickupCode;
 import com.wanyi.plugins.model.FuncInputData;
 import com.wanyi.plugins.model.Response;
 import com.wanyi.plugins.order.PickupCodeExecutor;
 import com.wanyi.plugins.utils.text.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,12 +35,12 @@ public class PickupExcelReceiverFunc implements Function<FuncInputData, JSONObje
      */
     @Override
     public JSONObject apply(FuncInputData data) {
-        String payload = data.getPayload();
+        String dataStr = data.getData();
         Context context = data.getContext();
         //把payload转成json array
-        if (StringUtils.isNotEmpty(payload)){
+        if (StringUtils.isNotEmpty(dataStr)){
             try {
-                JSONObject payloadJson = JSONObject.parseObject(payload);
+                JSONObject payloadJson = JSONObject.parseObject(dataStr);
                 JSONObject payloadData = payloadJson.getJSONObject("payload");
 
                 int type = payloadData.getIntValue("type");

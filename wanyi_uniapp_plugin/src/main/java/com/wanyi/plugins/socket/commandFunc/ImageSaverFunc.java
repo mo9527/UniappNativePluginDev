@@ -16,7 +16,6 @@ import com.wanyi.plugins.model.Response;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -35,8 +34,8 @@ public class ImageSaverFunc implements Function<FuncInputData, JSONObject> {
 
     @Override
     public JSONObject apply(FuncInputData data) {
-        String payload = data.getPayload();
-        JSONObject jsonObject = JSONObject.parseObject(payload);
+        String dataStr = data.getData();
+        JSONObject jsonObject = JSONObject.parseObject(dataStr);
         JSONObject jsonPayload = jsonObject.getJSONObject("payload");
         String imgFormat = jsonPayload.getString("format");
         String imgBase64 = jsonPayload.getString("data");
